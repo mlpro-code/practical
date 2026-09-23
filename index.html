@@ -7,7 +7,89 @@
 
 <body>
 <pre>
-    hello
+    PROGRAM 1
+Demonstrate the following data preprocessing tasks using Python libraries.
+a) Loading the dataset b) Identifying the dependent and independent variables
+c) Dealing with missing data
+
+
+Download salary data from kaggle
+Code:
+# ADML - Linear Regression using Salary Dataset
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import r2_score
+
+# Load dataset
+dataset = pd.read_csv("Salary_Data.csv")
+
+# Display dataset
+print("DATASET")
+print(dataset.head())
+
+# BEFORE PROCESSING
+print("\nOUTPUT (BEFORE PROCESSING)")
+print(dataset.head(5))
+
+# Check missing values
+print("\nMISSING VALUES")
+print(dataset.isnull().sum())
+
+# Handle missing values
+dataset['YearsExperience'] = dataset['YearsExperience'].fillna(
+    dataset['YearsExperience'].mean()
+)
+
+dataset['Salary'] = dataset['Salary'].fillna(
+    dataset['Salary'].mean()
+)
+
+# AFTER PROCESSING
+print("\nOUTPUT (AFTER PROCESSING)")
+print(dataset.head(5))
+
+# Independent and Dependent Variables
+X = dataset[['YearsExperience']]
+y = dataset['Salary']
+
+print("\nIndependent Variable (X): YearsExperience")
+print(X.head())
+
+print("\nDependent Variable (y): Salary")
+print(y.head())
+
+# Create Linear Regression Model
+model = LinearRegression()
+
+# Train the model
+model.fit(X, y)
+
+# Prediction
+y_pred = model.predict(X)
+
+# Display prediction
+print("\nPredicted Salary:")
+print(y_pred[:5])
+
+# R2 Score
+r2 = r2_score(y, y_pred)
+print("\nR2 Score:", r2)
+
+# Graph
+plt.scatter(X, y, marker='x', label='Actual')
+plt.plot(X, y_pred, label='Predicted')
+
+plt.xlabel("Years Experience")
+plt.ylabel("Salary")
+plt.title("Linear Regression for Salary Dataset")
+plt.legend()
+plt.show()
+
+
 </pre>
 </body>
 </html>
