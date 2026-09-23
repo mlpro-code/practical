@@ -1033,7 +1033,2217 @@ ggplot(pca_result, aes(x = PC1, y = PC2, color = Type)) +
   ) +
   theme_minimal()
 
-14
+Application
+14.customer buying pattern using classification method
+
+# ============================================================
+# CUSTOMER BUYING PATTERN USING CLASSIFICATION
+# Application using Jupyter Notebook
+# Dataset: Walmart Sales Dataset
+# ============================================================
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+
+from sklearn.naive_bayes import GaussianNB
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.neighbors import KNeighborsClassifier
+
+from sklearn.metrics import (
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score
+)
+
+
+# ============================================================
+# 1. LOAD DATASET
+# ============================================================
+
+file_path = r"Walmart_Sales.csv"
+
+df = pd.read_csv(file_path)
+
+print("Dataset loaded successfully!")
+print("Rows    :", df.shape[0])
+print("Columns :", df.shape[1])
+
+
+# ============================================================
+# 2. CREATE CLASSIFICATION TARGET
+# ============================================================
+
+median_sales = df["Weekly_Sales"].median()
+
+df["Sales_Category"] = np.where(
+    df["Weekly_Sales"] >= median_sales,
+    "High Sales",
+    "Low Sales"
+)
+
+
+# ============================================================
+# 3. SELECT INPUT FEATURES AND TARGET
+# ============================================================
+
+X = df[
+    [
+        "Store",
+        "Holiday_Flag",
+        "Temperature",
+        "Fuel_Price",
+        "CPI",
+        "Unemployment"
+    ]
+]
+
+y = df["Sales_Category"]
+
+
+# ============================================================
+# 4. TRAIN TEST SPLIT
+# ============================================================
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.20,
+    random_state=42,
+    stratify=y
+)
+
+
+# ============================================================
+# 5. FEATURE SCALING
+# ============================================================
+
+scaler = StandardScaler()
+
+X_train_scaled = scaler.fit_transform(X_train)
+
+X_test_scaled = scaler.transform(X_test)
+
+
+# ============================================================
+# 6. CREATE MODELS
+# ============================================================
+
+nb_model = GaussianNB()
+
+dt_model = DecisionTreeClassifier(
+    random_state=42
+)
+
+knn_model = KNeighborsClassifier(
+    n_neighbors=5
+)
+
+
+# ============================================================
+# 7. TRAIN MODELS
+# ============================================================
+
+nb_model.fit(
+    X_train_scaled,
+    y_train
+)
+
+dt_model.fit(
+    X_train,
+    y_train
+)
+
+knn_model.fit(
+    X_train_scaled,
+    y_train
+)
+
+
+# ============================================================
+# 8. PREDICTIONS
+# ============================================================
+
+nb_predictions = nb_model.predict(
+    X_test_scaled
+)
+
+dt_predictions = dt_model.predict(
+    X_test
+)
+
+knn_predictions = knn_model.predict(
+    X_test_scaled
+)
+
+
+# ============================================================
+# 9. PERFORMANCE CALCULATION
+# ============================================================
+
+def calculate_metrics(y_true, prediction):
+
+    accuracy = accuracy_score(
+        y_true,
+        prediction
+    )
+
+    precision = precision_score(
+        y_true,
+        prediction,
+        pos_label="High Sales",
+        zero_division=0
+    )
+
+    recall = recall_score(
+        y_true,
+        prediction,
+        pos_label="High Sales",
+        zero_division=0
+    )
+
+    f1 = f1_score(
+        y_true,
+        prediction,
+        pos_label="High Sales",
+        zero_division=0
+    )
+
+    return accuracy, precision, recall, f1
+
+
+nb_results = calculate_metrics(
+    y_test,
+    nb_predictions
+)
+
+dt_results = calculate_metrics(
+    y_test,
+    dt_predictions
+)
+
+knn_results = calculate_metrics(
+    y_test,
+    knn_predictions
+)
+
+
+# ============================================================
+# 10. PERFORMANCE TABLE
+# ============================================================
+
+performance = pd.DataFrame({
+
+    "Algorithm": [
+        "Naive Bayes",
+        "Decision Tree",
+        "KNN"
+    ],
+
+    "Accuracy": [
+        nb_results[0],
+        dt_results[0],
+        knn_results[0]
+    ],
+
+    "Precision": [
+        nb_results[1],
+        dt_results[1],
+        knn_results[1]
+    ],
+
+    "Recall": [
+        nb_results[2],
+        dt_results[2],
+        knn_results[2]
+    ],
+
+    "F1 Score": [
+        nb_results[3],
+        dt_results[3],
+        knn_results[3]
+    ]
+})
+
+
+# ============================================================
+# 11. TITLE
+# ============================================================
+
+print()
+
+print("╔" + "═" * 65 + "╗")
+
+print(
+    "║" +
+    "       CUSTOMER BUYING PATTERN CLASSIFICATION       ".center(65) +
+    "║"
+)
+
+print("╚" + "═" * 65 + "╝")
+
+
+# ============================================================
+# 12. MODEL PERFORMANCE COMPARISON
+# ============================================================
+
+print()
+
+print("┌" + "─" * 65 + "┐")
+
+print(
+    "│" +
+    "          MODEL PERFORMANCE COMPARISON".center(65) +
+    "│"
+)
+
+print("└" + "─" * 65 + "┘")
+
+print()
+
+print(
+    performance.round(2).to_string(
+        index=False,
+        formatters={
+            "Accuracy": "{:.2f}%".format,
+            "Precision": "{:.2f}%".format,
+            "Recall": "{:.2f}%".format,
+            "F1 Score": "{:.2f}%".format
+        }
+    )
+)
+
+
+# ============================================================
+# 13. BEST PERFORMING MODEL
+# ============================================================
+
+best_model = performance.loc[
+    performance["F1 Score"].idxmax()
+]
+
+
+print()
+
+print("┌" + "─" * 65 + "┐")
+
+print(
+    "│" +
+    "             BEST PERFORMING MODEL".center(65) +
+    "│"
+)
+
+print("└" + "─" * 65 + "┘")
+
+print()
+
+print(
+    "Best Model :",
+    best_model["Algorithm"]
+)
+
+print(
+    "Accuracy   :",
+    round(best_model["Accuracy"] * 100, 2),
+    "%"
+)
+
+print(
+    "Precision  :",
+    round(best_model["Precision"] * 100, 2),
+    "%"
+)
+
+print(
+    "Recall     :",
+    round(best_model["Recall"] * 100, 2),
+    "%"
+)
+
+print(
+    "F1 Score   :",
+    round(best_model["F1 Score"] * 100, 2),
+    "%"
+)
+
+
+# ============================================================
+# 14. NEW SALES RECORD PREDICTION
+# ============================================================
+
+new_data = pd.DataFrame({
+
+    "Store": [1],
+
+    "Holiday_Flag": [0],
+
+    "Temperature": [65.0],
+
+    "Fuel_Price": [3.50],
+
+    "CPI": [215.0],
+
+    "Unemployment": [7.5]
+
+})
+
+
+new_data_scaled = scaler.transform(
+    new_data
+)
+
+
+nb_result = nb_model.predict(
+    new_data_scaled
+)[0]
+
+dt_result = dt_model.predict(
+    new_data
+)[0]
+
+knn_result = knn_model.predict(
+    new_data_scaled
+)[0]
+
+
+# ============================================================
+# 15. PREDICTION OUTPUT
+# ============================================================
+
+print()
+
+print("┌" + "─" * 65 + "┐")
+
+print(
+    "│" +
+    "             NEW SALES PREDICTION".center(65) +
+    "│"
+)
+
+print("└" + "─" * 65 + "┘")
+
+print()
+
+print(
+    "Naive Bayes   :",
+    nb_result
+)
+
+print(
+    "Decision Tree :",
+    dt_result
+)
+
+print(
+    "KNN           :",
+    knn_result
+)
+
+
+# ============================================================
+# 16. PERFORMANCE GRAPH
+# ============================================================
+
+models = [
+    "Naive Bayes",
+    "Decision Tree",
+    "KNN"
+]
+
+
+accuracy_values = (
+    performance["Accuracy"].values * 100
+)
+
+precision_values = (
+    performance["Precision"].values * 100
+)
+
+recall_values = (
+    performance["Recall"].values * 100
+)
+
+f1_values = (
+    performance["F1 Score"].values * 100
+)
+
+
+x = np.arange(
+    len(models)
+)
+
+width = 0.2
+
+
+plt.figure(
+    figsize=(10, 6)
+)
+
+
+plt.bar(
+    x - 1.5 * width,
+    accuracy_values,
+    width,
+    label="Accuracy"
+)
+
+plt.bar(
+    x - 0.5 * width,
+    precision_values,
+    width,
+    label="Precision"
+)
+
+plt.bar(
+    x + 0.5 * width,
+    recall_values,
+    width,
+    label="Recall"
+)
+
+plt.bar(
+    x + 1.5 * width,
+    f1_values,
+    width,
+    label="F1 Score"
+)
+
+
+plt.xticks(
+    x,
+    models
+)
+
+plt.xlabel(
+    "Machine Learning Algorithms"
+)
+
+plt.ylabel(
+    "Performance (%)"
+)
+
+plt.title(
+    "Customer Buying Pattern - Model Performance"
+)
+
+plt.ylim(
+    0,
+    100
+)
+
+plt.legend()
+
+plt.grid(
+    axis="y",
+    linestyle="--",
+    alpha=0.4
+)
+
+plt.tight_layout()
+
+plt.show()
+
+
+# ============================================================
+# 17. COMPLETION
+# ============================================================
+
+print()
+
+print("╔" + "═" * 65 + "╗")
+
+print(
+    "║" +
+    "       CUSTOMER BUYING PATTERN COMPLETED       ".center(65) +
+    "║"
+)
+
+print("╚" + "═" * 65 + "╝")
+
+15.credit card fraud detection using supervised algorithm
+# ============================================================
+# CREDIT CLASSIFICATION USING SUPERVISED LEARNING
+# Dataset: German Credit Dataset
+# ============================================================
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+from sklearn.model_selection import train_test_split
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.pipeline import Pipeline
+
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+
+from sklearn.metrics import (
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score
+)
+
+
+# ============================================================
+# 1. LOAD DATASET
+# ============================================================
+
+file_path = r"CreditCardFraud.csv"
+
+df = pd.read_csv(file_path)
+
+print("Dataset loaded successfully!")
+print("Rows:", df.shape[0])
+print("Columns:", df.shape[1])
+
+
+# ============================================================
+# 2. SEPARATE INPUT AND OUTPUT
+# ============================================================
+
+X = df.drop("class", axis=1)
+y = df["class"]
+
+
+# ============================================================
+# 3. IDENTIFY FEATURES
+# ============================================================
+
+numerical_features = X.select_dtypes(
+    include=["int64", "float64"]
+).columns.tolist()
+
+categorical_features = X.select_dtypes(
+    include=["object"]
+).columns.tolist()
+
+
+# ============================================================
+# 4. TRAIN TEST SPLIT
+# ============================================================
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.20,
+    random_state=42,
+    stratify=y
+)
+
+
+# ============================================================
+# 5. PREPROCESSING
+# ============================================================
+
+preprocessor = ColumnTransformer(
+    transformers=[
+
+        (
+            "numerical",
+            StandardScaler(),
+            numerical_features
+        ),
+
+        (
+            "categorical",
+            OneHotEncoder(
+                handle_unknown="ignore",
+                sparse_output=False
+            ),
+            categorical_features
+        )
+    ]
+)
+
+
+# ============================================================
+# 6. CREATE MODELS
+# ============================================================
+
+models = {
+
+    "Logistic Regression":
+        LogisticRegression(
+            max_iter=1000,
+            random_state=42
+        ),
+
+    "Decision Tree":
+        DecisionTreeClassifier(
+            max_depth=10,
+            random_state=42
+        ),
+
+    "Random Forest":
+        RandomForestClassifier(
+            n_estimators=100,
+            random_state=42,
+            class_weight="balanced",
+            n_jobs=-1
+        )
+}
+
+
+# ============================================================
+# 7. TRAIN AND EVALUATE
+# ============================================================
+
+results = {}
+
+trained_models = {}
+
+for name, classifier in models.items():
+
+    model = Pipeline(
+        steps=[
+            (
+                "preprocessor",
+                preprocessor
+            ),
+
+            (
+                "classifier",
+                classifier
+            )
+        ]
+    )
+
+    model.fit(
+        X_train,
+        y_train
+    )
+
+    prediction = model.predict(
+        X_test
+    )
+
+    trained_models[name] = model
+
+    results[name] = {
+
+        "Accuracy":
+            accuracy_score(
+                y_test,
+                prediction
+            ) * 100,
+
+        "Precision":
+            precision_score(
+                y_test,
+                prediction,
+                pos_label="bad",
+                zero_division=0
+            ) * 100,
+
+        "Recall":
+            recall_score(
+                y_test,
+                prediction,
+                pos_label="bad",
+                zero_division=0
+            ) * 100,
+
+        "F1 Score":
+            f1_score(
+                y_test,
+                prediction,
+                pos_label="bad",
+                zero_division=0
+            ) * 100
+    }
+
+
+performance = pd.DataFrame(results).T
+
+
+# ============================================================
+# 8. TITLE
+# ============================================================
+
+print()
+print("╔" + "═" * 65 + "╗")
+print(
+    "║" +
+    "       CREDIT CLASSIFICATION SYSTEM       ".center(65) +
+    "║"
+)
+print("╚" + "═" * 65 + "╝")
+
+
+# ============================================================
+# 9. MODEL PERFORMANCE COMPARISON
+# ============================================================
+
+print()
+print("┌" + "─" * 65 + "┐")
+print(
+    "│" +
+    "          MODEL PERFORMANCE COMPARISON".center(65) +
+    "│"
+)
+print("└" + "─" * 65 + "┘")
+
+print()
+
+print(
+    performance.round(2).to_string(
+        formatters={
+            "Accuracy": "{:.2f}%".format,
+            "Precision": "{:.2f}%".format,
+            "Recall": "{:.2f}%".format,
+            "F1 Score": "{:.2f}%".format
+        }
+    )
+)
+
+
+# ============================================================
+# 10. BEST PERFORMING MODEL
+# ============================================================
+
+best_model = performance[
+    "F1 Score"
+].idxmax()
+
+best_accuracy = performance.loc[
+    best_model,
+    "Accuracy"
+]
+
+best_precision = performance.loc[
+    best_model,
+    "Precision"
+]
+
+best_recall = performance.loc[
+    best_model,
+    "Recall"
+]
+
+best_f1 = performance.loc[
+    best_model,
+    "F1 Score"
+]
+
+
+print()
+print("┌" + "─" * 65 + "┐")
+print(
+    "│" +
+    "             BEST PERFORMING MODEL".center(65) +
+    "│"
+)
+print("└" + "─" * 65 + "┘")
+
+print()
+
+print(
+    "Best Model :",
+    best_model
+)
+
+print(
+    "Accuracy   :",
+    round(best_accuracy, 2),
+    "%"
+)
+
+print(
+    "Precision  :",
+    round(best_precision, 2),
+    "%"
+)
+
+print(
+    "Recall     :",
+    round(best_recall, 2),
+    "%"
+)
+
+print(
+    "F1 Score   :",
+    round(best_f1, 2),
+    "%"
+)
+
+
+# ============================================================
+# 11. SAMPLE CREDIT PREDICTION
+# ============================================================
+
+sample = X_test.iloc[[0]]
+
+print()
+print("┌" + "─" * 65 + "┐")
+print(
+    "│" +
+    "              SAMPLE CREDIT PREDICTION".center(65) +
+    "│"
+)
+print("└" + "─" * 65 + "┘")
+
+print()
+
+for name, model in trained_models.items():
+
+    prediction = model.predict(
+        sample
+    )[0]
+
+    if prediction == "good":
+        result = "GOOD CREDIT"
+    else:
+        result = "BAD CREDIT"
+
+    print(
+        f"{name:<25} : {result}"
+    )
+
+
+# ============================================================
+# 12. PERFORMANCE GRAPH
+# ============================================================
+
+models_names = [
+    "Logistic Regression",
+    "Decision Tree",
+    "Random Forest"
+]
+
+accuracy = [
+    performance.loc[
+        name,
+        "Accuracy"
+    ]
+    for name in models_names
+]
+
+precision = [
+    performance.loc[
+        name,
+        "Precision"
+    ]
+    for name in models_names
+]
+
+recall = [
+    performance.loc[
+        name,
+        "Recall"
+    ]
+    for name in models_names
+]
+
+f1 = [
+    performance.loc[
+        name,
+        "F1 Score"
+    ]
+    for name in models_names
+]
+
+
+x = np.arange(
+    len(models_names)
+)
+
+width = 0.2
+
+
+plt.figure(
+    figsize=(11, 6)
+)
+
+
+plt.bar(
+    x - 1.5 * width,
+    accuracy,
+    width,
+    label="Accuracy"
+)
+
+plt.bar(
+    x - 0.5 * width,
+    precision,
+    width,
+    label="Precision"
+)
+
+plt.bar(
+    x + 0.5 * width,
+    recall,
+    width,
+    label="Recall"
+)
+
+plt.bar(
+    x + 1.5 * width,
+    f1,
+    width,
+    label="F1 Score"
+)
+
+
+plt.xticks(
+    x,
+    models_names
+)
+
+plt.xlabel(
+    "Machine Learning Models"
+)
+
+plt.ylabel(
+    "Performance (%)"
+)
+
+plt.title(
+    "Credit Classification - Model Performance"
+)
+
+plt.ylim(
+    0,
+    100
+)
+
+plt.legend()
+
+plt.grid(
+    axis="y",
+    linestyle="--",
+    alpha=0.4
+)
+
+plt.tight_layout()
+
+plt.show()
+
+
+# ============================================================
+# 13. COMPLETION
+# ============================================================
+
+print()
+print("╔" + "═" * 65 + "╗")
+print(
+    "║" +
+    "       CREDIT CLASSIFICATION COMPLETED       ".center(65) +
+    "║"
+)
+print("╚" + "═" * 65 + "╝")
+16.breast cancer prediction using supervised learning
+from sklearn.datasets import load_breast_cancer
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+import matplotlib.pyplot as plt
+import seaborn as sns
+data = load_breast_cancer()
+X = data.data
+y = data.target
+print("Dataset loaded successfully!")
+print("Number of samples:", X.shape[0])
+print("Number of features:", X.shape[1])
+print("Classes:", data.target_names)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y,
+    test_size=0.2,
+    random_state=42,
+    stratify=y
+)
+print("\nTraining samples:", X_train.shape[0])
+print("Testing samples:", X_test.shape[0])
+scaler = StandardScaler()
+
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+
+
+
+knn = KNeighborsClassifier(n_neighbors=5)
+
+knn.fit(X_train, y_train)
+
+y_pred_knn = knn.predict(X_test)
+
+knn_accuracy = accuracy_score(y_test, y_pred_knn)
+knn_cm = confusion_matrix(y_test, y_pred_knn)
+
+print("\n========== KNN RESULTS ==========")
+print("KNN Accuracy:", knn_accuracy)
+print("\nKNN Confusion Matrix:")
+print(knn_cm)
+
+print("\nKNN Classification Report:")
+print(classification_report(
+    y_test,
+    y_pred_knn,
+    target_names=data.target_names
+))
+svm = SVC(kernel='linear')
+
+svm.fit(X_train, y_train)
+
+y_pred_svm = svm.predict(X_test)
+
+svm_accuracy = accuracy_score(y_test, y_pred_svm)
+svm_cm = confusion_matrix(y_test, y_pred_svm)
+
+print("\n========== SVM RESULTS ==========")
+print("SVM Accuracy:", svm_accuracy)
+print("\nSVM Confusion Matrix:")
+print(svm_cm)
+
+print("\nSVM Classification Report:")
+print(classification_report(
+    y_test,
+    y_pred_svm,
+    target_names=data.target_names
+))
+plt.figure(figsize=(5, 4))
+
+sns.heatmap(
+    knn_cm,
+    annot=True,
+    fmt='d',
+    xticklabels=data.target_names,
+    yticklabels=data.target_names
+)
+
+plt.title("KNN Confusion Matrix")
+plt.xlabel("Predicted")
+plt.ylabel("Actual")
+plt.show()
+plt.figure(figsize=(5, 4))
+
+sns.heatmap(
+    svm_cm,
+    annot=True,
+    fmt='d',
+    xticklabels=data.target_names,
+    yticklabels=data.target_names
+)
+
+plt.title("SVM Confusion Matrix")
+plt.xlabel("Predicted")
+plt.ylabel("Actual")
+plt.show()
+print("\n========== COMPARISON ==========")
+
+print("KNN Accuracy:", knn_accuracy)
+print("SVM Accuracy:", svm_accuracy)
+
+if knn_accuracy > svm_accuracy:
+    print("\nKNN performed better than SVM.")
+elif svm_accuracy > knn_accuracy:
+    print("\nSVM performed better than KNN.")
+else:
+    print("\nBoth algorithms have the same accuracy.")
+
+17.customer segmentation using clustering
+
+# ============================================================
+# CUSTOMER BUYING PATTERN USING CLASSIFICATION
+# ============================================================
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.naive_bayes import GaussianNB
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import (
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score
+)
+
+
+# ============================================================
+# 1. LOAD DATASET
+# ============================================================
+
+df = pd.read_csv(
+    "Mall_Customers.csv"
+)
+
+print("Dataset loaded successfully!")
+print("Dataset Shape:", df.shape)
+
+
+# ============================================================
+# 2. CREATE TARGET
+# ============================================================
+
+# Spending Score >= 50 = High Spending
+# Spending Score < 50  = Low Spending
+
+df["SpendingCategory"] = np.where(
+    df["Spending Score (1-100)"] >= 50,
+    1,
+    0
+)
+
+
+# ============================================================
+# 3. SELECT FEATURES AND TARGET
+# ============================================================
+
+X = df[
+    [
+        "Age",
+        "Annual Income (k$)"
+    ]
+]
+
+y = df["SpendingCategory"]
+
+
+# ============================================================
+# 4. TRAIN TEST SPLIT
+# ============================================================
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.20,
+    random_state=42,
+    stratify=y
+)
+
+
+# ============================================================
+# 5. FEATURE SCALING
+# ============================================================
+
+scaler = StandardScaler()
+
+X_train_scaled = scaler.fit_transform(X_train)
+
+X_test_scaled = scaler.transform(X_test)
+
+
+# ============================================================
+# 6. CREATE MODELS
+# ============================================================
+
+models = {
+
+    "Naive Bayes":
+        GaussianNB(),
+
+    "Decision Tree":
+        DecisionTreeClassifier(
+            random_state=42
+        ),
+
+    "KNN":
+        KNeighborsClassifier(
+            n_neighbors=5
+        )
+}
+
+
+# ============================================================
+# 7. TRAIN AND EVALUATE MODELS
+# ============================================================
+
+results = {}
+
+predictions = {}
+
+for name, model in models.items():
+
+    model.fit(
+        X_train_scaled,
+        y_train
+    )
+
+    prediction = model.predict(
+        X_test_scaled
+    )
+
+    predictions[name] = prediction
+
+    results[name] = {
+
+        "Accuracy":
+            accuracy_score(
+                y_test,
+                prediction
+            ) * 100,
+
+        "Precision":
+            precision_score(
+                y_test,
+                prediction,
+                zero_division=0
+            ) * 100,
+
+        "Recall":
+            recall_score(
+                y_test,
+                prediction,
+                zero_division=0
+            ) * 100,
+
+        "F1 Score":
+            f1_score(
+                y_test,
+                prediction,
+                zero_division=0
+            ) * 100
+    }
+
+
+performance = pd.DataFrame(
+    results
+).T
+
+
+# ============================================================
+# 8. TITLE
+# ============================================================
+
+print()
+print("╔" + "═" * 65 + "╗")
+print(
+    "║" +
+    "       CUSTOMER BUYING PATTERN CLASSIFICATION       ".center(65) +
+    "║"
+)
+print("╚" + "═" * 65 + "╝")
+
+
+# ============================================================
+# 9. MODEL PERFORMANCE COMPARISON
+# ============================================================
+
+print()
+print("┌" + "─" * 65 + "┐")
+print(
+    "│" +
+    "          MODEL PERFORMANCE COMPARISON".center(65) +
+    "│"
+)
+print("└" + "─" * 65 + "┘")
+
+print()
+
+print(
+    performance.round(2).to_string(
+        formatters={
+            "Accuracy": "{:.2f}%".format,
+            "Precision": "{:.2f}%".format,
+            "Recall": "{:.2f}%".format,
+            "F1 Score": "{:.2f}%".format
+        }
+    )
+)
+
+
+# ============================================================
+# 10. BEST PERFORMING MODEL
+# ============================================================
+
+best_model = performance[
+    "F1 Score"
+].idxmax()
+
+best_accuracy = performance.loc[
+    best_model,
+    "Accuracy"
+]
+
+best_precision = performance.loc[
+    best_model,
+    "Precision"
+]
+
+best_recall = performance.loc[
+    best_model,
+    "Recall"
+]
+
+best_f1 = performance.loc[
+    best_model,
+    "F1 Score"
+]
+
+
+print()
+print("┌" + "─" * 65 + "┐")
+print(
+    "│" +
+    "             BEST PERFORMING MODEL".center(65) +
+    "│"
+)
+print("└" + "─" * 65 + "┘")
+
+print()
+
+print(
+    "  Best Model :",
+    best_model
+)
+
+print(
+    "  Accuracy   :",
+    round(best_accuracy, 2),
+    "%"
+)
+
+print(
+    "  Precision  :",
+    round(best_precision, 2),
+    "%"
+)
+
+print(
+    "  Recall     :",
+    round(best_recall, 2),
+    "%"
+)
+
+print(
+    "  F1 Score   :",
+    round(best_f1, 2),
+    "%"
+)
+
+
+# ============================================================
+# 11. NEW CUSTOMER PREDICTION
+# ============================================================
+
+new_customer = pd.DataFrame({
+
+    "Age": [25],
+
+    "Annual Income (k$)": [50]
+
+})
+
+
+new_customer_scaled = scaler.transform(
+    new_customer
+)
+
+
+print()
+print("┌" + "─" * 65 + "┐")
+print(
+    "│" +
+    "             NEW CUSTOMER PREDICTION".center(65) +
+    "│"
+)
+print("└" + "─" * 65 + "┘")
+
+print()
+
+print("Age:", 25)
+
+print(
+    "Annual Income:",
+    50,
+    "k$"
+)
+
+
+for name, model in models.items():
+
+    result = model.predict(
+        new_customer_scaled
+    )[0]
+
+    if result == 1:
+
+        prediction = "HIGH SPENDING"
+
+    else:
+
+        prediction = "LOW SPENDING"
+
+    print(
+        f"{name:<20} : {prediction}"
+    )
+
+
+# ============================================================
+# 12. PERFORMANCE GRAPH
+# ============================================================
+
+models_names = [
+    "Naive Bayes",
+    "Decision Tree",
+    "KNN"
+]
+
+accuracy = [
+    results[name]["Accuracy"]
+    for name in models_names
+]
+
+precision = [
+    results[name]["Precision"]
+    for name in models_names
+]
+
+recall = [
+    results[name]["Recall"]
+    for name in models_names
+]
+
+f1 = [
+    results[name]["F1 Score"]
+    for name in models_names
+]
+
+
+x = np.arange(
+    len(models_names)
+)
+
+width = 0.2
+
+
+plt.figure(
+    figsize=(10, 6)
+)
+
+
+plt.bar(
+    x - 1.5 * width,
+    accuracy,
+    width,
+    label="Accuracy"
+)
+
+plt.bar(
+    x - 0.5 * width,
+    precision,
+    width,
+    label="Precision"
+)
+
+plt.bar(
+    x + 0.5 * width,
+    recall,
+    width,
+    label="Recall"
+)
+
+plt.bar(
+    x + 1.5 * width,
+    f1,
+    width,
+    label="F1 Score"
+)
+
+
+plt.xticks(
+    x,
+    models_names
+)
+
+plt.xlabel(
+    "Machine Learning Models"
+)
+
+plt.ylabel(
+    "Performance (%)"
+)
+
+plt.title(
+    "Customer Buying Pattern - Model Performance"
+)
+
+plt.ylim(
+    0,
+    100
+)
+
+plt.legend()
+
+plt.grid(
+    axis="y",
+    linestyle="--",
+    alpha=0.4
+)
+
+plt.tight_layout()
+
+plt.show()
+
+
+# ============================================================
+# 13. COMPLETION
+# ============================================================
+
+print()
+print("╔" + "═" * 65 + "╗")
+print(
+    "║" +
+    "       CUSTOMER BUYING PATTERN COMPLETED       ".center(65) +
+    "║"
+)
+print("╚" + "═" * 65 + "╝")
+
+18.Loan defaulters prediction
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import (
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score
+)
+
+
+# ============================================================
+# 1. CREATE DATASET
+# ============================================================
+
+np.random.seed(42)
+
+data = pd.DataFrame({
+    "Income": np.random.randint(20000, 100000, 500),
+    "LoanAmount": np.random.randint(5000, 80000, 500),
+    "CreditScore": np.random.randint(300, 850, 500),
+    "LoanTerm": np.random.choice(
+        [12, 24, 36, 48, 60], 500
+    ),
+    "Age": np.random.randint(21, 65, 500)
+})
+
+
+# Default condition
+data["Default"] = (
+    (data["CreditScore"] < 550) |
+    (data["LoanAmount"] > data["Income"] * 0.7)
+).astype(int)
+
+
+# ============================================================
+# 2. DATA PREPROCESSING
+# ============================================================
+
+X = data.drop("Default", axis=1)
+y = data["Default"]
+
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.20,
+    random_state=42,
+    stratify=y
+)
+
+
+scaler = StandardScaler()
+
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+
+# ============================================================
+# 3. CREATE MODELS
+# ============================================================
+
+models = {
+
+    "Logistic Regression":
+        LogisticRegression(),
+
+    "Decision Tree":
+        DecisionTreeClassifier(random_state=42),
+
+    "KNN":
+        KNeighborsClassifier(n_neighbors=5)
+}
+
+
+# ============================================================
+# 4. TRAIN AND EVALUATE
+# ============================================================
+
+results = {}
+
+for name, model in models.items():
+
+    model.fit(X_train, y_train)
+
+    prediction = model.predict(X_test)
+
+    results[name] = {
+
+        "Accuracy":
+            accuracy_score(
+                y_test,
+                prediction
+            ) * 100,
+
+        "Precision":
+            precision_score(
+                y_test,
+                prediction,
+                zero_division=0
+            ) * 100,
+
+        "Recall":
+            recall_score(
+                y_test,
+                prediction,
+                zero_division=0
+            ) * 100,
+
+        "F1 Score":
+            f1_score(
+                y_test,
+                prediction,
+                zero_division=0
+            ) * 100
+    }
+
+
+results_df = pd.DataFrame(results).T
+
+
+# ============================================================
+# 5. TITLE
+# ============================================================
+
+print()
+print("╔" + "═" * 63 + "╗")
+print(
+    "║" +
+    "        LOAN DEFAULTERS PREDICTION SYSTEM        ".center(63) +
+    "║"
+)
+print("╚" + "═" * 63 + "╝")
+
+
+# ============================================================
+# 6. NEW CUSTOMER PREDICTION
+# ============================================================
+
+new_customer = pd.DataFrame(
+    [[40000, 30000, 500, 36, 30]],
+    columns=[
+        "Income",
+        "LoanAmount",
+        "CreditScore",
+        "LoanTerm",
+        "Age"
+    ]
+)
+
+
+new_customer_scaled = scaler.transform(
+    new_customer
+)
+
+
+print()
+print("┌" + "─" * 63 + "┐")
+print(
+    "│" +
+    "             PREDICTION RESULTS".center(63) +
+    "│"
+)
+print("└" + "─" * 63 + "┘")
+
+
+for name, model in models.items():
+
+    prediction = model.predict(
+        new_customer_scaled
+    )
+
+    if prediction[0] == 1:
+        result = "LOAN DEFAULTER"
+    else:
+        result = "NON-DEFAULTER"
+
+    print(
+        f"  {name:<25} |  {result}"
+    )
+
+
+# ============================================================
+# 7. MODEL PERFORMANCE COMPARISON
+# ============================================================
+
+print()
+print("┌" + "─" * 63 + "┐")
+print(
+    "│" +
+    "          MODEL PERFORMANCE COMPARISON".center(63) +
+    "│"
+)
+print("└" + "─" * 63 + "┘")
+
+print()
+
+print(
+    results_df.round(2).to_string(
+        formatters={
+            "Accuracy": "{:.2f}%".format,
+            "Precision": "{:.2f}%".format,
+            "Recall": "{:.2f}%".format,
+            "F1 Score": "{:.2f}%".format
+        }
+    )
+)
+
+
+# ============================================================
+# 8. BEST PERFORMING MODEL
+# ============================================================
+
+best_model = results_df[
+    "Accuracy"
+].idxmax()
+
+best_accuracy = results_df.loc[
+    best_model,
+    "Accuracy"
+]
+
+
+print()
+print("┌" + "─" * 63 + "┐")
+print(
+    "│" +
+    "             BEST PERFORMING MODEL".center(63) +
+    "│"
+)
+print("└" + "─" * 63 + "┘")
+
+print()
+
+print(
+    f"  Best Model : {best_model}"
+)
+
+print(
+    f"  Accuracy   : {best_accuracy:.2f}%"
+)
+
+print()
+
+print(
+    f"  {best_model} is the best-performing model "
+    f"with an accuracy of {best_accuracy:.2f}%."
+)
+
+
+# ============================================================
+# 9. PERFORMANCE VISUALIZATION
+# ============================================================
+
+ax = results_df[
+    [
+        "Accuracy",
+        "Precision",
+        "Recall",
+        "F1 Score"
+    ]
+].plot(
+    kind="bar",
+    figsize=(10, 6)
+)
+
+
+plt.title(
+    "Loan Defaulters - Model Performance",
+    fontsize=16,
+    fontweight="bold"
+)
+
+plt.xlabel(
+    "Machine Learning Models",
+    fontsize=12
+)
+
+plt.ylabel(
+    "Performance (%)",
+    fontsize=12
+)
+
+plt.ylim(0, 100)
+
+plt.xticks(
+    rotation=0
+)
+
+plt.grid(
+    axis="y",
+    linestyle="--",
+    alpha=0.4
+)
+
+plt.legend(
+    title="Metrics",
+    loc="lower right"
+)
+
+plt.tight_layout()
+
+plt.show()
+
+
+# ============================================================
+# 10. COMPLETION
+# ============================================================
+
+print()
+
+print("╔" + "═" * 63 + "╗")
+print(
+    "║" +
+    "     LOAN DEFAULTERS PREDICTION COMPLETED     ".center(63) +
+    "║"
+)
+print("╚" + "═" * 63 + "╝")
+
+19.classification of iris dataset
+# ============================================================
+# SMART IRIS FLOWER CLASSIFICATION SYSTEM
+# Jupyter Notebook Version
+# ============================================================
+
+import pandas as pd
+
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import accuracy_score
+
+
+# ============================================================
+# LOAD DATASET
+# ============================================================
+
+iris = load_iris()
+
+X = iris.data
+y = iris.target
+
+df = pd.DataFrame(
+    iris.data,
+    columns=iris.feature_names
+)
+
+df["species"] = [
+    iris.target_names[i]
+    for i in iris.target
+]
+
+
+# ============================================================
+# TRAIN AND TEST DATA
+# ============================================================
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.2,
+    random_state=42,
+    stratify=y
+)
+
+
+# ============================================================
+# TRAIN MODELS
+# ============================================================
+
+knn = KNeighborsClassifier(
+    n_neighbors=3
+)
+
+knn.fit(
+    X_train,
+    y_train
+)
+
+
+dt = DecisionTreeClassifier(
+    random_state=42
+)
+
+dt.fit(
+    X_train,
+    y_train
+)
+
+
+# ============================================================
+# CALCULATE MODEL ACCURACY
+# ============================================================
+
+knn_predictions = knn.predict(X_test)
+
+dt_predictions = dt.predict(X_test)
+
+knn_accuracy = accuracy_score(
+    y_test,
+    knn_predictions
+) * 100
+
+dt_accuracy = accuracy_score(
+    y_test,
+    dt_predictions
+) * 100
+
+
+# ============================================================
+# TITLE
+# ============================================================
+
+print("=" * 55)
+print("       SMART IRIS FLOWER CLASSIFICATION")
+print("=" * 55)
+
+
+# ============================================================
+# ALGORITHM SELECTION
+# ============================================================
+
+print("\nChoose Algorithm")
+print("1. KNN")
+print("2. Decision Tree")
+
+algo_choice = input(
+    "\nEnter Choice (1 or 2): "
+)
+
+if algo_choice == "1":
+    algorithm = "KNN"
+    selected_model = knn
+    accuracy = knn_accuracy
+
+else:
+    algorithm = "Decision Tree"
+    selected_model = dt
+    accuracy = dt_accuracy
+
+
+# ============================================================
+# SPECIES SELECTION
+# ============================================================
+
+print("\nSelect Iris Species Dataset")
+
+print("1. Setosa")
+print("2. Versicolor")
+print("3. Virginica")
+
+species_choice = input(
+    "\nEnter Choice (1-3): "
+)
+
+if species_choice == "1":
+
+    flower = "setosa"
+
+elif species_choice == "2":
+
+    flower = "versicolor"
+
+else:
+
+    flower = "virginica"
+
+
+# ============================================================
+# DISPLAY 5 SAMPLE DATASETS
+# ============================================================
+
+sample_records = df[
+    df["species"] == flower
+].head(5)
+
+
+print("\n" + "=" * 55)
+print(
+    f"      {flower.upper()} SAMPLE DATASETS"
+)
+print("=" * 55)
+
+
+for i, row in enumerate(
+    sample_records.values,
+    start=1
+):
+
+    print(
+        f"{i}. "
+        f"Sepal Length={row[0]}, "
+        f"Sepal Width={row[1]}, "
+        f"Petal Length={row[2]}, "
+        f"Petal Width={row[3]}"
+    )
+
+
+# ============================================================
+# CHOOSE DATASET RECORD
+# ============================================================
+
+record_choice = int(
+    input(
+        "\nChoose Dataset Record (1-5): "
+    )
+)
+
+
+selected = sample_records.iloc[
+    record_choice - 1
+]
+
+
+sample = [[
+    selected["sepal length (cm)"],
+    selected["sepal width (cm)"],
+    selected["petal length (cm)"],
+    selected["petal width (cm)"]
+]]
+
+
+# ============================================================
+# PREDICTION
+# ============================================================
+
+prediction = selected_model.predict(
+    sample
+)[0]
+
+
+species = iris.target_names[
+    prediction
+]
+
+
+# ============================================================
+# CONFIDENCE
+# ============================================================
+
+if hasattr(
+    selected_model,
+    "predict_proba"
+):
+
+    probabilities = (
+        selected_model.predict_proba(sample)[0]
+    )
+
+    confidence = (
+        max(probabilities) * 100
+    )
+
+else:
+
+    confidence = accuracy
+
+
+# ============================================================
+# RESULT
+# ============================================================
+
+print("\n")
+
+print("=" * 55)
+print(
+    "        IRIS FLOWER CLASSIFICATION RESULT"
+)
+print("=" * 55)
+
+print(
+    "Algorithm Used    :",
+    algorithm
+)
+
+print(
+    "Selected Dataset  :",
+    record_choice
+)
+
+print(
+    "Predicted Species :",
+    species.upper()
+)
+
+print(
+    "Model Accuracy    :",
+    round(accuracy, 2),
+    "%"
+)
+
+print(
+    "Confidence Score  :",
+    round(confidence, 2),
+    "%"
+)
+
+print("=" * 55)
+
+
+# ============================================================
+# SPECIES DESCRIPTION
+# ============================================================
+
+if species == "setosa":
+
+    print("\n🌸 IRIS SETOSA")
+    print("- Small petals")
+    print("- Broad sepals")
+    print("- Easy to classify")
+    print("- Native to North America")
+
+
+elif species == "versicolor":
+
+    print("\n🌼 IRIS VERSICOLOR")
+    print("- Medium petals")
+    print("- Purple-blue flower")
+    print("- Intermediate species")
+
+
+else:
+
+    print("\n🌺 IRIS VIRGINICA")
+    print("- Largest petals")
+    print("- Deep violet flower")
+    print("- Native to Eastern USA")
+
+
+print(
+    "\nPrediction Completed Successfully!"
+)
+
 </pre>
 </body>
 </html>
