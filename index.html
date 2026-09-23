@@ -361,6 +361,132 @@ plt.xlabel("Days")
 plt.ylabel("Temperature (°C)")
 plt.legend()
 plt.show()
+
+Program 6
+Write a Python code to implement Text Mining for the corpus data.
+
+ !pip install wordcloud
+
+CLOSE THE KERNEL AND OPEN A NEW KERNEL THEN TYPE THIS CODE
+
+from wordcloud import WordCloud
+print("WordCloud imported successfully!")
+
+# TEXT MINING FOR CORPUS DATA
+# ADML LAB
+
+# Step 1: Import required libraries
+import re
+import pandas as pd
+import matplotlib.pyplot as plt
+from collections import Counter
+
+from sklearn.feature_extraction.text import TfidfVectorizer
+from wordcloud import WordCloud
+
+
+# Step 2: Create corpus data
+corpus = [
+    "Python is a popular programming language",
+    "Python is used for data mining and machine learning",
+    "Text mining is used to extract useful information from text",
+    "Machine learning and data mining are important technologies",
+    "Python provides many libraries for data analysis",
+    "Text mining helps to analyze large amounts of text data"
+]
+
+print("Original Corpus:")
+for i, text in enumerate(corpus, 1):
+    print(i, ":", text)
+
+
+# Step 3: Text preprocessing
+def preprocess(text):
+    text = text.lower()                     # Convert to lowercase
+    text = re.sub(r'[^a-z\s]', '', text)   # Remove special characters
+    words = text.split()                   # Split into words
+    
+    # Remove stop words
+    stop_words = {
+        "is", "a", "the", "to", "for", "and",
+        "of", "from", "are", "used", "into"
+    }
+    
+    words = [word for word in words if word not in stop_words]
+    return words
+
+
+# Step 4: Apply preprocessing
+all_words = []
+
+for text in corpus:
+    words = preprocess(text)
+    all_words.extend(words)
+
+print("\nPreprocessed Words:")
+print(all_words)
+
+
+# Step 5: Count word frequency
+word_frequency = Counter(all_words)
+
+print("\nWord Frequency:")
+for word, count in word_frequency.most_common():
+    print(word, ":", count)
+
+
+# Step 6: Display top 10 most common words
+top_words = word_frequency.most_common(10)
+
+words = [item[0] for item in top_words]
+counts = [item[1] for item in top_words]
+
+print("\nTop 10 Most Common Words:")
+for word, count in top_words:
+    print(word, ":", count)
+
+
+# Step 7: Bar graph
+plt.figure(figsize=(10, 5))
+
+plt.bar(words, counts)
+
+plt.title("Top 10 Most Common Words")
+plt.xlabel("Words")
+plt.ylabel("Frequency")
+plt.xticks(rotation=45)
+
+plt.show()
+
+
+# Step 8: Generate Word Cloud
+wordcloud = WordCloud(
+    width=800,
+    height=400,
+    background_color="white"
+).generate(" ".join(all_words))
+
+plt.figure(figsize=(10, 5))
+plt.imshow(wordcloud, interpolation="bilinear")
+plt.axis("off")
+plt.title("Word Cloud")
+plt.show()
+
+
+# Step 9: TF-IDF representation
+vectorizer = TfidfVectorizer(stop_words="english")
+
+tfidf_matrix = vectorizer.fit_transform(corpus)
+
+tfidf_df = pd.DataFrame(
+    tfidf_matrix.toarray(),
+    columns=vectorizer.get_feature_names_out()
+)
+
+print("\nTF-IDF Matrix:")
+print(tfidf_df.round(2))
+
+
 </pre>
 </body>
 </html>
