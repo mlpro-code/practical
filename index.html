@@ -296,8 +296,71 @@ print("\nResult:")
 print("Hierarchical clustering was successfully performed on the weather dataset.")
 print("The weather records were grouped into two clusters.")
 
+Program 5
+Write a Python code to perform Clustering using the Birch algorithm.
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.cluster import Birch
 
+# Load dataset directly from GitHub
+url = "https://raw.githubusercontent.com/jbrownlee/Datasets/master/daily-min-temperatures.csv"
 
+data = pd.read_csv(url)
+
+print("Original Data:")
+print(data.head())
+
+# Select temperature column
+X = data[["Temp"]]
+
+# Create BIRCH model
+birch = Birch(n_clusters=3)
+
+# Fit model
+birch.fit(X)
+
+# Predict clusters
+data["Cluster"] = birch.predict(X)
+
+# Display clustered data
+print("\nClustered Data:")
+print(data.head(20))
+
+# New temperature point
+new_point = pd.DataFrame([[28]], columns=["Temp"])
+
+# Predict cluster
+new_cluster = birch.predict(new_point)
+
+print("\nNew temperature point:", new_point.iloc[0, 0])
+print("New point belongs to cluster:", new_cluster[0])
+
+# Plot clusters
+plt.figure(figsize=(10, 5))
+
+plt.scatter(
+    range(len(data)),
+    data["Temp"],
+    c=data["Cluster"],
+    cmap="viridis"
+)
+
+# Plot new point
+plt.scatter(
+    len(data),
+    28,
+    c="red",
+    marker="*",
+    s=200,
+    label="New Point"
+)
+
+plt.title("BIRCH Clustering - Daily Minimum Temperature")
+plt.xlabel("Days")
+plt.ylabel("Temperature (°C)")
+plt.legend()
+plt.show()
 </pre>
 </body>
 </html>
