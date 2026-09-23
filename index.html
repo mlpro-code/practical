@@ -157,6 +157,75 @@ print(result.head())
 
 print("\nNaive Bayes classifier successfully detected Spam and Ham emails.")
 
+Program 3
+Demonstrate the following similarity measures using python
+a) Pearson’s Correlation b) Euclidean Distance) Manhattan Distance
+
+from scipy.stats import pearsonr
+from scipy.spatial.distance import euclidean, cityblock
+
+# ==========================================
+# VECTORS
+# ==========================================
+
+A = [1, 2, 3, 4, 5]
+B = [2, 1, 4, 3, 5]
+
+# ==========================================
+# PEARSON CORRELATION
+# ==========================================
+
+# Positive Correlation
+P_A = [1, 2, 3, 4, 5]
+P_B = [2, 4, 6, 8, 10]
+
+# Negative Correlation
+N_A = [1, 2, 3, 4, 5]
+N_B = [10, 8, 6, 4, 2]
+
+# No Correlation
+Z_A = [1, 2, 3, 4, 5]
+Z_B = [3, 1, 5, 2, 4]
+
+# Calculate Pearson values
+positive, _ = pearsonr(P_A, P_B)
+negative, _ = pearsonr(N_A, N_B)
+no_correlation, _ = pearsonr(Z_A, Z_B)
+
+# ==========================================
+# EUCLIDEAN DISTANCE
+# ==========================================
+
+euc = euclidean(A, B)
+
+# ==========================================
+# MANHATTAN DISTANCE
+# ==========================================
+
+man = cityblock(A, B)
+
+# ==========================================
+# DISPLAY OUTPUT
+# ==========================================
+
+print("======================================")
+print("       SIMILARITY MEASURES")
+print("======================================")
+
+print("\nVector A =", A)
+print("Vector B =", B)
+
+print("\n--- Pearson Correlation ---")
+print("Positive Correlation :", round(positive, 4))
+print("Negative Correlation :", round(negative, 4))
+print("No Correlation       :", round(no_correlation, 4))
+
+print("\n--- Distance Measures ---")
+print("Euclidean Distance   :", round(euc, 4))
+print("Manhattan Distance   :", man)
+
+print("\n======================================")
+
 
 </pre>
 </body>
