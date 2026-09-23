@@ -89,6 +89,74 @@ plt.title("Linear Regression for Salary Dataset")
 plt.legend()
 plt.show()
 
+Program 2
+Implement a probabilistic model to detect Spam Email with Naive Bayes
+
+Download spam csv from kaggle
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.metrics import accuracy_score
+
+# Load dataset
+dataset = pd.read_csv("spam.csv", encoding="latin-1")
+
+# Select required columns
+dataset = dataset[['Category', 'Message']]
+
+# Rename columns
+dataset.columns = ['label', 'message']
+
+# Display first 5 records
+print("First 5 Records:")
+print(dataset.head())
+
+# Separate input and output
+X = dataset['message']
+y = dataset['label']
+
+# Split dataset into training and testing data
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+# Save original test emails
+X_test_text = X_test.copy()
+
+# Convert text into numerical features
+cv = CountVectorizer()
+X_train = cv.fit_transform(X_train)
+X_test = cv.transform(X_test)
+
+# Create and train Naive Bayes model
+model = MultinomialNB()
+model.fit(X_train, y_train)
+
+# Predict test data
+y_pred = model.predict(X_test)
+
+# Calculate accuracy
+accuracy = accuracy_score(y_test, y_pred)
+
+print("\nPredictions:")
+print(y_pred)
+
+print("\nAccuracy:", accuracy * 100, "%")
+
+# Display Email Text, Actual Class and Predicted Class
+result = pd.DataFrame({
+    'Email Text': X_test_text.values,
+    'Actual Class': y_test.values,
+    'Predicted Class': y_pred
+})
+
+print("\nEmail Classification Results:")
+print(result.head())
+
+print("\nNaive Bayes classifier successfully detected Spam and Ham emails.")
+
 
 </pre>
 </body>
