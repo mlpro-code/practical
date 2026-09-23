@@ -226,6 +226,77 @@ print("Manhattan Distance   :", man)
 
 print("\n======================================")
 
+Program 4
+Experiment on hierarchal Data Clustering algorithms on weather data set.
+
+Download weather csv from kaggle
+
+# Q4. Hierarchical Data Clustering on Weather Dataset
+
+# 1. Import libraries
+import pandas as pd
+import matplotlib.pyplot as plt
+from scipy.cluster.hierarchy import dendrogram, linkage
+from sklearn.cluster import AgglomerativeClustering
+
+# 2. Load weather dataset
+dataset = pd.read_csv("weather.csv")
+
+# 3. Take first 10 records to avoid MemoryError
+dataset = dataset.head(10)
+
+# 4. Display weather dataset
+print("WEATHER DATASET")
+print(dataset)
+
+# 5. Select numerical columns
+X = dataset[['MinTemp', 'MaxTemp']]
+
+# 6. Create Dendrogram
+plt.figure(figsize=(8, 5))
+
+Z = linkage(X, method='ward')
+
+dendrogram(Z)
+
+plt.title("Hierarchical Clustering Dendrogram")
+plt.xlabel("Weather Records")
+plt.ylabel("Distance")
+plt.show()
+
+# 7. Apply Agglomerative Hierarchical Clustering
+hc = AgglomerativeClustering(n_clusters=2)
+
+y = hc.fit_predict(X)
+
+# 8. Add cluster values to dataset
+dataset["Cluster"] = y
+
+# 9. Display clustered data
+print("\nCLUSTERED WEATHER DATA")
+print(dataset[['MinTemp', 'MaxTemp', 'Cluster']])
+
+# 10. Display clustering graph
+plt.figure(figsize=(8, 5))
+
+plt.scatter(
+    dataset['MinTemp'],
+    dataset['MaxTemp'],
+    c=dataset['Cluster']
+)
+
+plt.xlabel("Minimum Temperature")
+plt.ylabel("Maximum Temperature")
+plt.title("Hierarchical Clustering of Weather Data")
+
+plt.show()
+
+# 11. Result
+print("\nResult:")
+print("Hierarchical clustering was successfully performed on the weather dataset.")
+print("The weather records were grouped into two clusters.")
+
+
 
 </pre>
 </body>
