@@ -13,82 +13,65 @@ a) Loading the dataset b) Identifying the dependent and independent variables
 c) Dealing with missing data
 
 
-Download salary data from kaggle
-Code:
-# ADML - Linear Regression using Salary Dataset
-
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-
 from sklearn.linear_model import LinearRegression
-from sklearn.metrics import r2_score
+from sklearn.metrics import r2_score, mean_squared_error
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from sklearn.datasets import load_diabetes
+from sklearn.model_selection import train_test_split
 
-# Load dataset
-dataset = pd.read_csv("Salary_Data.csv")
+# Load diabetes dataset
+data = load_diabetes()
 
-# Display dataset
-print("DATASET")
-print(dataset.head())
+# Create DataFrame
+df = pd.DataFrame(data.data, columns=data.feature_names)
+df['target'] = data.target
 
-# BEFORE PROCESSING
-print("\nOUTPUT (BEFORE PROCESSING)")
-print(dataset.head(5))
+# Check for missing values
+if df.isnull().values.any():
+    df = df.fillna(df.mean())
 
-# Check missing values
-print("\nMISSING VALUES")
-print(dataset.isnull().sum())
+# Select BMI as input and target as output
+X = df[['bmi']]
+y = df['target']
 
-# Handle missing values
-dataset['YearsExperience'] = dataset['YearsExperience'].fillna(
-    dataset['YearsExperience'].mean()
+print(data.feature_names)
+
+# Split dataset into training and testing data
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
 )
 
-dataset['Salary'] = dataset['Salary'].fillna(
-    dataset['Salary'].mean()
-)
-
-# AFTER PROCESSING
-print("\nOUTPUT (AFTER PROCESSING)")
-print(dataset.head(5))
-
-# Independent and Dependent Variables
-X = dataset[['YearsExperience']]
-y = dataset['Salary']
-
-print("\nIndependent Variable (X): YearsExperience")
-print(X.head())
-
-print("\nDependent Variable (y): Salary")
-print(y.head())
-
-# Create Linear Regression Model
+# Create Linear Regression model
 model = LinearRegression()
 
 # Train the model
-model.fit(X, y)
+model.fit(X_train, y_train)
 
-# Prediction
-y_pred = model.predict(X)
+# Predict test data
+y_pred = model.predict(X_test)
 
-# Display prediction
-print("\nPredicted Salary:")
-print(y_pred[:5])
+# Calculate R2 score
+r2 = r2_score(y_test, y_pred)
+print(f"R2 Score is {round(r2, 3)}")
 
-# R2 Score
-r2 = r2_score(y, y_pred)
-print("\nR2 Score:", r2)
+# Calculate Mean Squared Error
+mse = mean_squared_error(y_test, y_pred)
+print(f"MSE is {round(mse, 3)}")
 
-# Graph
-plt.scatter(X, y, marker='x', label='Actual')
-plt.plot(X, y_pred, label='Predicted')
+# Plot actual values
+plt.scatter(X_test, y_test, c="blue", label="Actual")
 
-plt.xlabel("Years Experience")
-plt.ylabel("Salary")
-plt.title("Linear Regression for Salary Dataset")
+# Plot predicted regression line
+plt.plot(X_test, y_pred, color="green", label="Predicted")
+
+plt.title("Linear Regression for the Diabetes Dataset using BMI Value")
+plt.xlabel("BMI")
+plt.ylabel("Disease Progression")
 plt.legend()
 plt.show()
-
+    
 Program 2
 Implement a probabilistic model to detect Spam Email with Naive Bayes
 
