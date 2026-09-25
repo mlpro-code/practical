@@ -706,8 +706,12 @@ Develop a Convolutional Neural Network (CNN) model to classify protein secondary
 # ------------------------------------------------------------
 # STEP 1: Load library
 # ------------------------------------------------------------
-install.packages("keras3")
+
+# Run this only once if keras3 is not installed
+# install.packages("keras3")
+
 library(keras3)
+
 
 # ------------------------------------------------------------
 # STEP 2: Create protein dataset
@@ -764,6 +768,7 @@ protein_data <- data.frame(
 
 print(protein_data)
 
+
 # ------------------------------------------------------------
 # STEP 3: Convert amino acids into numbers
 # ------------------------------------------------------------
@@ -777,6 +782,7 @@ aa_number <- setNames(
   1:length(amino_acids),
   amino_acids
 )
+
 
 # ------------------------------------------------------------
 # STEP 4: Convert protein sequences
@@ -804,6 +810,7 @@ numeric_sequences <- lapply(
   convert_sequence
 )
 
+
 # ------------------------------------------------------------
 # STEP 5: Create input matrix
 # ------------------------------------------------------------
@@ -823,8 +830,10 @@ for (i in 1:nrow(protein_data)) {
   X[i, 1:length(temp)] <- temp
 }
 
+
 # Normalize amino acid values
 X <- X / length(amino_acids)
+
 
 # ------------------------------------------------------------
 # STEP 6: Convert data into CNN format
@@ -834,6 +843,7 @@ X <- array(
   X,
   dim = c(nrow(X), max_length, 1)
 )
+
 
 # ------------------------------------------------------------
 # STEP 7: Convert structure labels
@@ -848,6 +858,7 @@ y <- as.integer(
 
 num_classes <- 3
 
+
 # ------------------------------------------------------------
 # STEP 8: Convert labels to categorical
 # ------------------------------------------------------------
@@ -856,6 +867,7 @@ y_cat <- to_categorical(
   y,
   num_classes = num_classes
 )
+
 
 # ------------------------------------------------------------
 # STEP 9: Create CNN model
@@ -883,6 +895,7 @@ model |>
     activation = "softmax"
   )
 
+
 # ------------------------------------------------------------
 # STEP 10: Compile CNN
 # ------------------------------------------------------------
@@ -893,11 +906,13 @@ model |> compile(
   metrics = "accuracy"
 )
 
+
 # ------------------------------------------------------------
 # STEP 11: Display model
 # ------------------------------------------------------------
 
 summary(model)
+
 
 # ------------------------------------------------------------
 # STEP 12: Train model
@@ -911,6 +926,7 @@ history <- model |> fit(
   verbose = 1
 )
 
+
 # ------------------------------------------------------------
 # STEP 13: Evaluate model
 # ------------------------------------------------------------
@@ -921,7 +937,15 @@ result <- model |> evaluate(
   verbose = 0
 )
 
-cat("\nTest Loss:", result[[1]], "\n")
+cat("\n====================================\n")
+cat("CNN MODEL PERFORMANCE\n")
+cat("====================================\n")
+
+cat(
+  "Test Loss:",
+  round(result[[1]], 4),
+  "\n"
+)
 
 cat(
   "Test Accuracy:",
@@ -929,11 +953,17 @@ cat(
   "%\n"
 )
 
+cat("====================================\n")
+
+
 # ------------------------------------------------------------
 # STEP 14: Make predictions
 # ------------------------------------------------------------
 
-prediction <- model |> predict(X)
+prediction <- model |> predict(
+  X,
+  verbose = 0
+)
 
 predicted_class <- apply(
   prediction,
@@ -942,6 +972,7 @@ predicted_class <- apply(
 )
 
 predicted_class <- predicted_class - 1
+
 
 # ------------------------------------------------------------
 # STEP 15: Display actual and predicted results
@@ -961,11 +992,36 @@ result_table <- data.frame(
 
 print(result_table)
 
+
 # ------------------------------------------------------------
-# STEP 16: Plot training history
+# STEP 16: Final Accuracy
 # ------------------------------------------------------------
 
-plot(history)
+correct_predictions <- sum(
+  result_table$Actual == result_table$Predicted
+)
+
+total_predictions <- nrow(result_table)
+
+accuracy <- (
+  correct_predictions / total_predictions
+) * 100
+
+cat("\nCorrect Predictions:",
+    correct_predictions,
+    "out of",
+    total_predictions,
+    "\n")
+
+cat(
+  "Final Accuracy:",
+  round(accuracy, 2),
+  "%\n"
+)
+
+# ------------------------------------------------------------
+# END OF EXPERIMENT
+# ------------------------------------------------------------
 
 Program 10
 Apply PCA to visualize tumor vs normal samples.
